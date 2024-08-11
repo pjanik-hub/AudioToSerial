@@ -36,6 +36,7 @@
 			label1 = new Label();
 			label2 = new Label();
 			refreshAudioButton = new Button();
+			waveViewer = new NAudio.Gui.WaveViewer();
 			SuspendLayout();
 			// 
 			// serialsCombo
@@ -71,12 +72,11 @@
 			// 
 			// logBox
 			// 
-			logBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 			logBox.FormattingEnabled = true;
 			logBox.ItemHeight = 15;
-			logBox.Location = new Point(12, 168);
+			logBox.Location = new Point(12, 135);
 			logBox.Name = "logBox";
-			logBox.Size = new Size(224, 259);
+			logBox.Size = new Size(224, 64);
 			logBox.TabIndex = 4;
 			// 
 			// audioOutputCombo
@@ -86,6 +86,7 @@
 			audioOutputCombo.Name = "audioOutputCombo";
 			audioOutputCombo.Size = new Size(224, 23);
 			audioOutputCombo.TabIndex = 5;
+			audioOutputCombo.SelectionChangeCommitted += audioOutputCombo_SelectionChangeCommitted;
 			// 
 			// label1
 			// 
@@ -115,11 +116,24 @@
 			refreshAudioButton.UseVisualStyleBackColor = true;
 			refreshAudioButton.Click += refreshAudioButton_Click;
 			// 
+			// waveViewer
+			// 
+			waveViewer.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			waveViewer.BorderStyle = BorderStyle.FixedSingle;
+			waveViewer.Location = new Point(12, 210);
+			waveViewer.Name = "waveViewer";
+			waveViewer.SamplesPerPixel = 128;
+			waveViewer.Size = new Size(542, 259);
+			waveViewer.StartPosition = 0L;
+			waveViewer.TabIndex = 9;
+			waveViewer.WaveStream = null;
+			// 
 			// AudioApp
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(566, 450);
+			ClientSize = new Size(566, 481);
+			Controls.Add(waveViewer);
 			Controls.Add(refreshAudioButton);
 			Controls.Add(label2);
 			Controls.Add(label1);
@@ -145,5 +159,6 @@
 		private Label label1;
 		private Label label2;
 		private Button refreshAudioButton;
+		private NAudio.Gui.WaveViewer waveViewer;
 	}
 }
