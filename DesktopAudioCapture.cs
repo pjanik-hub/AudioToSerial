@@ -8,12 +8,12 @@
 	/// </summary>
 	public class DesktopAudioCapture
 	{
-		private const int FFT_SAMPLE_RATE = 44100;
+		private FrequencyBuckets FrequencyAmplitudes { get; set; }
 
+		private const int FFT_SAMPLE_RATE = 44100;
 		private readonly WasapiLoopbackCapture capture;
 		private readonly BufferedWaveProvider buffer;
 		private readonly object lockObject = new object();
-		private FrequencyBuckets FrequencyAmplitudes { get; set; }
 		private const double SCALE_FACTOR = 1E6;
 
 		// expose to make easier
@@ -127,9 +127,9 @@
 			int highEndBin = FrequencyMap(highEnd, FFT_SAMPLE_RATE, doubleMagnitudeLen);
 
 			// get averages
-			double lowAmplitude = AggregateMagnitude(magnitudes, lowStartBin, lowEndBin);
-			double midAmplitude = AggregateMagnitude(magnitudes, midStartBin, midEndBin);
-			double highAmplitude = AggregateMagnitude(magnitudes, highStartBin, highEndBin);
+			double lowAmplitude = AggregateMagnitude(magnitudes, lowEndBin, lowStartBin);
+			double midAmplitude = AggregateMagnitude(magnitudes, midEndBin, midStartBin);
+			double highAmplitude = AggregateMagnitude(magnitudes , highEndBin, highStartBin);
 
 			return new FrequencyBuckets
 			{
@@ -152,7 +152,7 @@
 		/// <param name="startBin"></param>
 		/// <param name="endBin"></param>
 		/// <returns></returns>
-		private static double AggregateMagnitude(double[] magnitudes, int startBin, int endBin)
+		private static double AggregateMagnitude(double[] magnitudes, int endBin, int startBin)
 		{
 			double sum = 0;
 
