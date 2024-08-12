@@ -31,11 +31,7 @@
 			serialsCombo = new ComboBox();
 			refreshSerialButton = new Button();
 			bindButton = new Button();
-			logBox = new ListBox();
-			audioOutputCombo = new ComboBox();
 			label1 = new Label();
-			label2 = new Label();
-			refreshAudioButton = new Button();
 			waveViewer = new NAudio.Gui.WaveViewer();
 			SuspendLayout();
 			// 
@@ -70,24 +66,6 @@
 			bindButton.UseVisualStyleBackColor = true;
 			bindButton.Click += bindButton_Click;
 			// 
-			// logBox
-			// 
-			logBox.FormattingEnabled = true;
-			logBox.ItemHeight = 15;
-			logBox.Location = new Point(12, 135);
-			logBox.Name = "logBox";
-			logBox.Size = new Size(224, 64);
-			logBox.TabIndex = 4;
-			// 
-			// audioOutputCombo
-			// 
-			audioOutputCombo.FormattingEnabled = true;
-			audioOutputCombo.Location = new Point(257, 27);
-			audioOutputCombo.Name = "audioOutputCombo";
-			audioOutputCombo.Size = new Size(224, 23);
-			audioOutputCombo.TabIndex = 5;
-			audioOutputCombo.SelectionChangeCommitted += audioOutputCombo_SelectionChangeCommitted;
-			// 
 			// label1
 			// 
 			label1.AutoSize = true;
@@ -97,33 +75,15 @@
 			label1.TabIndex = 6;
 			label1.Text = "Serial Port";
 			// 
-			// label2
-			// 
-			label2.AutoSize = true;
-			label2.Location = new Point(257, 9);
-			label2.Name = "label2";
-			label2.Size = new Size(80, 15);
-			label2.TabIndex = 7;
-			label2.Text = "Audio Output";
-			// 
-			// refreshAudioButton
-			// 
-			refreshAudioButton.Location = new Point(257, 56);
-			refreshAudioButton.Name = "refreshAudioButton";
-			refreshAudioButton.Size = new Size(224, 23);
-			refreshAudioButton.TabIndex = 8;
-			refreshAudioButton.Text = "Refresh";
-			refreshAudioButton.UseVisualStyleBackColor = true;
-			refreshAudioButton.Click += refreshAudioButton_Click;
-			// 
 			// waveViewer
 			// 
-			waveViewer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+			waveViewer.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			waveViewer.BackColor = SystemColors.ActiveCaption;
 			waveViewer.BorderStyle = BorderStyle.FixedSingle;
-			waveViewer.Location = new Point(12, 210);
+			waveViewer.Location = new Point(12, 138);
 			waveViewer.Name = "waveViewer";
 			waveViewer.SamplesPerPixel = 128;
-			waveViewer.Size = new Size(224, 99);
+			waveViewer.Size = new Size(542, 188);
 			waveViewer.StartPosition = 0L;
 			waveViewer.TabIndex = 9;
 			waveViewer.WaveStream = null;
@@ -132,13 +92,9 @@
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(566, 481);
+			ClientSize = new Size(566, 338);
 			Controls.Add(waveViewer);
-			Controls.Add(refreshAudioButton);
-			Controls.Add(label2);
 			Controls.Add(label1);
-			Controls.Add(audioOutputCombo);
-			Controls.Add(logBox);
 			Controls.Add(bindButton);
 			Controls.Add(refreshSerialButton);
 			Controls.Add(serialsCombo);
@@ -155,11 +111,7 @@
 		private ComboBox serialsCombo;
 		private Button refreshSerialButton;
 		private Button bindButton;
-		private ListBox logBox;
-		private ComboBox audioOutputCombo;
 		private Label label1;
-		private Label label2;
-		private Button refreshAudioButton;
 		private NAudio.Gui.WaveViewer waveViewer;
 	}
 }

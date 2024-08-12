@@ -3,6 +3,9 @@
 	using NAudio.Dsp;
 	using NAudio.Wave;
 
+	/// <summary>
+	/// Make for an easy way to capture realtime audio on desktop.
+	/// </summary>
 	public class DesktopAudioCapture
 	{
 		private readonly WasapiLoopbackCapture capture;
@@ -31,7 +34,7 @@
 			lock (lockObject)
 			{
 				buffer.AddSamples(e.Buffer, 0, e.BytesRecorded);
-				ApplyFFT(e.Buffer, e.BytesRecorded);
+				// ApplyFFT(e.Buffer, e.BytesRecorded);
 			}
 		}
 
@@ -50,18 +53,28 @@
 				fftBuffer[i].Y = 0;
 			}
 
-			FastFourierTransform.FFT(true, (int)Math.Log(samples.Length, 2), fftBuffer);
+			FastFourierTransform.FFT(
+				true, 
+				(int)Math.Log(samples.Length, 2), 
+				fftBuffer
+			);
 
 			// fftBuffer now contains frequency domain data
 			// Process fftBuffer as needed
 		}
 
+		/// <summary>
+		/// Public-facing function to provide buffer access
+		/// </summary>
+		/// <returns></returns>
 		public byte[] GetBufferForWaveViewer()
 		{
 			if (buffer == null)
-				return new byte[0];
+				return Array.Empty<byte>();
 
 			byte[] tempBuffer;
+
+			// put a lock on this process to make it thread safe
 			lock (lockObject)
 			{
 				tempBuffer = new byte[buffer.BufferLength];
