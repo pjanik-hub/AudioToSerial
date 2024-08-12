@@ -84,6 +84,7 @@
 			// fftBuffer now contains frequency domain data
 			// Calculate magnitude (amplitude) of each freqency
 
+			// important note: only half of this is needed, since we operate on positive freqs
 			double[] magnitudes = new double[fftBuffer.Length / 2];
 			for (int i = 0; i < magnitudes.Length; i++)
 			{

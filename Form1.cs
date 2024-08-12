@@ -11,12 +11,13 @@ namespace AudioToSerial
 		private readonly Timer updateTimer;
 		private FrequencyBuckets FrequencyBuckets;
 
-		private double minLowFreq = 0;
-		private double maxLowFreq = 0;
-		private double minMidFreq = 0;
-		private double maxMidFreq = 0;
-		private double minHighFreq = 0;
-		private double maxHighFreq = 0;
+		// can remove min since we only use positive freqs
+		private double minLowFreq = double.PositiveInfinity;
+		private double maxLowFreq = double.NegativeInfinity;
+		private double minMidFreq = double.PositiveInfinity;
+		private double maxMidFreq = double.NegativeInfinity;
+		private double minHighFreq = double.PositiveInfinity;
+		private double maxHighFreq = double.NegativeInfinity;
 
 		public AudioApp()
 		{
