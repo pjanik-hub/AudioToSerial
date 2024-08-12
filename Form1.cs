@@ -22,6 +22,8 @@ namespace AudioToSerial
 			updateTimer = new Timer();
 			updateTimer.Interval = 100;
 			updateTimer.Tick += UpdateTimer_Tick;
+
+			FrequencyBuckets = new FrequencyBuckets();
 		}
 
 		private void UpdateTimer_Tick(object? sender, EventArgs e)
