@@ -10,7 +10,7 @@
 	{
 		private FrequencyBuckets FrequencyAmplitudes { get; set; }
 
-		private const int FFT_SAMPLE_RATE = 44100;
+		private const int FFT_SAMPLE_RATE = 44100; // magic number i dont get by the way
 		private readonly WasapiLoopbackCapture capture;
 		private readonly BufferedWaveProvider buffer;
 		private readonly object lockObject = new object();
@@ -149,8 +149,8 @@
 		/// Get the average amplitude in a band.
 		/// </summary>
 		/// <param name="magnitudes">The collection of bands</param>
-		/// <param name="startBin"></param>
 		/// <param name="endBin"></param>
+		/// <param name="startBin"></param>
 		/// <returns></returns>
 		private static double AggregateMagnitude(double[] magnitudes, int endBin, int startBin)
 		{
