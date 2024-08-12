@@ -33,6 +33,12 @@
 			bindButton = new Button();
 			label1 = new Label();
 			waveViewer = new NAudio.Gui.WaveViewer();
+			lowTextBox = new TextBox();
+			midTextBox = new TextBox();
+			highTextBox = new TextBox();
+			label2 = new Label();
+			label3 = new Label();
+			label4 = new Label();
 			SuspendLayout();
 			// 
 			// serialsCombo
@@ -88,11 +94,74 @@
 			waveViewer.TabIndex = 9;
 			waveViewer.WaveStream = null;
 			// 
+			// lowTextBox
+			// 
+			lowTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			lowTextBox.Location = new Point(323, 27);
+			lowTextBox.Name = "lowTextBox";
+			lowTextBox.ReadOnly = true;
+			lowTextBox.Size = new Size(231, 23);
+			lowTextBox.TabIndex = 10;
+			// 
+			// midTextBox
+			// 
+			midTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			midTextBox.Location = new Point(323, 56);
+			midTextBox.Name = "midTextBox";
+			midTextBox.ReadOnly = true;
+			midTextBox.Size = new Size(231, 23);
+			midTextBox.TabIndex = 11;
+			// 
+			// highTextBox
+			// 
+			highTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			highTextBox.Location = new Point(323, 85);
+			highTextBox.Name = "highTextBox";
+			highTextBox.ReadOnly = true;
+			highTextBox.Size = new Size(231, 23);
+			highTextBox.TabIndex = 12;
+			// 
+			// label2
+			// 
+			label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			label2.AutoSize = true;
+			label2.Location = new Point(279, 30);
+			label2.Name = "label2";
+			label2.Size = new Size(29, 15);
+			label2.TabIndex = 13;
+			label2.Text = "Low";
+			// 
+			// label3
+			// 
+			label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			label3.AutoSize = true;
+			label3.Location = new Point(279, 59);
+			label3.Name = "label3";
+			label3.Size = new Size(28, 15);
+			label3.TabIndex = 14;
+			label3.Text = "Mid";
+			// 
+			// label4
+			// 
+			label4.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			label4.AutoSize = true;
+			label4.Location = new Point(279, 89);
+			label4.Name = "label4";
+			label4.Size = new Size(33, 15);
+			label4.TabIndex = 15;
+			label4.Text = "High";
+			// 
 			// AudioApp
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(566, 338);
+			Controls.Add(label4);
+			Controls.Add(label3);
+			Controls.Add(label2);
+			Controls.Add(highTextBox);
+			Controls.Add(midTextBox);
+			Controls.Add(lowTextBox);
 			Controls.Add(waveViewer);
 			Controls.Add(label1);
 			Controls.Add(bindButton);
@@ -113,5 +182,11 @@
 		private Button bindButton;
 		private Label label1;
 		private NAudio.Gui.WaveViewer waveViewer;
+		private TextBox lowTextBox;
+		private TextBox midTextBox;
+		private TextBox highTextBox;
+		private Label label2;
+		private Label label3;
+		private Label label4;
 	}
 }

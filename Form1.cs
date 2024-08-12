@@ -9,6 +9,7 @@ namespace AudioToSerial
 		private SerialPort? currentPort = null;
 		private readonly DesktopAudioCapture audioCapture;
 		private readonly Timer updateTimer;
+		private FrequencyBuckets FrequencyBuckets;
 
 		public AudioApp()
 		{
@@ -26,6 +27,7 @@ namespace AudioToSerial
 		private void UpdateTimer_Tick(object? sender, EventArgs e)
 		{
 			byte[] buffer = audioCapture.GetBufferForWaveViewer();
+			this.FrequencyBuckets = audioCapture.GetFrequencyBuckets();
 
 			if (buffer.Length > 0)
 			{
@@ -35,6 +37,10 @@ namespace AudioToSerial
 					this.waveViewer.Refresh();
 				}
 			}
+
+			this.lowTextBox.Text = this.FrequencyBuckets.Low.ToString();
+			this.midTextBox.Text = this.FrequencyBuckets.Mid.ToString();
+			this.highTextBox.Text = this.FrequencyBuckets.High.ToString();
 		}
 
 		private void AudioApp_Load(object sender, EventArgs e)
