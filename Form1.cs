@@ -11,6 +11,13 @@ namespace AudioToSerial
 		private readonly Timer updateTimer;
 		private FrequencyBuckets FrequencyBuckets;
 
+		private double minLowFreq = 0;
+		private double maxLowFreq = 0;
+		private double minMidFreq = 0;
+		private double maxMidFreq = 0;
+		private double minHighFreq = 0;
+		private double maxHighFreq = 0;
+
 		public AudioApp()
 		{
 			InitializeComponent();
@@ -29,7 +36,7 @@ namespace AudioToSerial
 		private void UpdateTimer_Tick(object? sender, EventArgs e)
 		{
 			byte[] buffer = audioCapture.GetBufferForWaveViewer();
-			this.FrequencyBuckets = audioCapture.GetFrequencyBuckets();
+			FrequencyBuckets freq = audioCapture.GetFrequencyBuckets();
 
 			if (buffer.Length > 0)
 			{
@@ -40,9 +47,52 @@ namespace AudioToSerial
 				}
 			}
 
-			this.lowTextBox.Text = this.FrequencyBuckets.Low.ToString();
-			this.midTextBox.Text = this.FrequencyBuckets.Mid.ToString();
-			this.highTextBox.Text = this.FrequencyBuckets.High.ToString();
+			UpdateFrequencyAmplitudes(freq);
+		}
+
+		private void UpdateFrequencyAmplitudes(FrequencyBuckets frequencyBuckets)
+		{
+			this.lowTextBox.Text = GetFriendlyTextFromFreq(frequencyBuckets.Low);
+			this.midTextBox.Text = GetFriendlyTextFromFreq(frequencyBuckets.Mid);
+			this.highTextBox.Text = GetFriendlyTextFromFreq(frequencyBuckets.High);
+
+			if (frequencyBuckets.Low < minLowFreq)
+			{
+				minLowFreq = frequencyBuckets.Low;
+				this.minLowTxtBox.Text = GetFriendlyTextFromFreq(minLowFreq);
+			}
+			if (frequencyBuckets.Low > maxLowFreq)
+			{
+				maxLowFreq = frequencyBuckets.Low;
+				this.maxLowTxtBox.Text = GetFriendlyTextFromFreq(maxLowFreq);
+			}
+
+			if (frequencyBuckets.Mid < minMidFreq)
+			{
+				minMidFreq = frequencyBuckets.Mid;
+				this.minMidTxtBox.Text = GetFriendlyTextFromFreq(minMidFreq);
+			}
+			if (frequencyBuckets.Mid > maxMidFreq)
+			{
+				maxMidFreq = frequencyBuckets.Mid;
+				this.maxMidTxtBox.Text = GetFriendlyTextFromFreq(maxMidFreq);
+			}
+
+			if (frequencyBuckets.High < minHighFreq)
+			{
+				minHighFreq = frequencyBuckets.High;
+				this.minHighTxtBox.Text = GetFriendlyTextFromFreq(minHighFreq);
+			}
+			if (frequencyBuckets.High > maxHighFreq)
+			{
+				maxHighFreq = frequencyBuckets.High;
+				this.maxHighTxtBox.Text = GetFriendlyTextFromFreq(maxHighFreq);
+			}
+		}
+
+		private string GetFriendlyTextFromFreq(double input)
+		{
+			return input.ToString("0.##E+0");
 		}
 
 		private void AudioApp_Load(object sender, EventArgs e)

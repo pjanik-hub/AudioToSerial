@@ -14,6 +14,7 @@
 		private readonly BufferedWaveProvider buffer;
 		private readonly object lockObject = new object();
 		private FrequencyBuckets FrequencyAmplitudes { get; set; }
+		private const double SCALE_FACTOR = 1E6;
 
 		// expose to make easier
 		public WaveFormat WaveFormat;
@@ -89,13 +90,19 @@
 				double xSquared = fftBuffer[i].X * fftBuffer[i].X;
 				double ySquared = fftBuffer[i].Y * fftBuffer[i].Y;
 
-				magnitudes[i] = Math.Sqrt(xSquared + ySquared) * 1E6;
+				magnitudes[i] = Math.Sqrt(xSquared + ySquared) * SCALE_FACTOR;
 			}
 
-			// finally, convert to 
+			// Finally, convert to amplitude buckets!
 			return AggregateFrequencyBands(magnitudes);
 		}
 
+		/// <summary>
+		/// Calculate start/end points of each bucket, then return the 
+		/// amplitude of each freq. band.
+		/// </summary>
+		/// <param name="magnitudes"></param>
+		/// <returns></returns>
 		private static FrequencyBuckets AggregateFrequencyBands(double[] magnitudes)
 		{
 			// 0.00 to 300 Hz
@@ -106,7 +113,7 @@
 			int midStart = 301;
 			int midEnd = 2000;
 
-			// 2.10 to 20.0 kHz
+			// 2.01 to 20.0 kHz
 			int highStart = 2001;
 			int highEnd = 20000;
 
@@ -131,6 +138,7 @@
 				High = highAmplitude
 			};
 		}
+
 
 		public static int FrequencyMap(int freq, int sampleRate, int fftSize)
 		{
