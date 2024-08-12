@@ -118,12 +118,12 @@
 			// 
 			// waveViewer
 			// 
-			waveViewer.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			waveViewer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
 			waveViewer.BorderStyle = BorderStyle.FixedSingle;
 			waveViewer.Location = new Point(12, 210);
 			waveViewer.Name = "waveViewer";
 			waveViewer.SamplesPerPixel = 128;
-			waveViewer.Size = new Size(542, 259);
+			waveViewer.Size = new Size(224, 99);
 			waveViewer.StartPosition = 0L;
 			waveViewer.TabIndex = 9;
 			waveViewer.WaveStream = null;
@@ -144,6 +144,7 @@
 			Controls.Add(serialsCombo);
 			Name = "AudioApp";
 			Text = "Audio2Serial";
+			FormClosing += AudioApp_FormClosing;
 			Load += AudioApp_Load;
 			ResumeLayout(false);
 			PerformLayout();

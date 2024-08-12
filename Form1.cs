@@ -1,51 +1,52 @@
-using NAudio.Wave;
-using System;
-using System.IO.Ports;
-using System.Text.RegularExpressions;
-
 namespace AudioToSerial
 {
+	using NAudio.Wave;
+	using System.IO.Ports;
+	using Timer = System.Windows.Forms.Timer;
+
 	public partial class AudioApp : Form
 	{
-		private SerialPort? currentPort;
-		private WaveOut currentWaveOut;
-		private WaveStream currentStream;
+		private SerialPort? currentPort = null;
+		private DesktopAudioCapture audioCapture;
 
 		private int selectedDeviceIndex = -1;
 
-		private readonly string outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "NAudio");
-		private readonly string outputPath;
-
-		WasapiLoopbackCapture capture;
-		private BufferedWaveProvider buffer;
+		private Timer updateTimer;
 
 		public AudioApp()
 		{
 			InitializeComponent();
 
-			if (!Directory.Exists(outputFolder))
-				Directory.CreateDirectory(outputFolder);
+			audioCapture = new DesktopAudioCapture();
 
-			outputPath = Path.Combine(outputFolder, "audio.wav");
+			this.waveViewer.SamplesPerPixel = 5;
 
-			capture = new WasapiLoopbackCapture();
-			buffer = new BufferedWaveProvider(capture.WaveFormat);
-
-			capture.DataAvailable += Capture_DataAvailable;
-
-			currentPort = null;
-			currentWaveOut = new WaveOut() { DeviceNumber = -1 };
+			updateTimer = new Timer();
+			updateTimer.Interval = 100;
+			updateTimer.Tick += UpdateTimer_Tick;
 		}
 
-		private void Capture_DataAvailable(object? sender, WaveInEventArgs e)
+		private void UpdateTimer_Tick(object? sender, EventArgs e)
 		{
-			buffer.AddSamples(e.Buffer, 0, e.BytesRecorded);
+			byte[] buffer = audioCapture.GetBufferForWaveViewer();
+
+			if (buffer.Length > 0)
+			{
+				using (var waveStream = new RawSourceWaveStream(buffer, 0, buffer.Length, audioCapture.WaveFormat))
+				{
+					this.waveViewer.WaveStream = waveStream;
+					this.waveViewer.Refresh();
+				}
+			}
 		}
 
 		private void AudioApp_Load(object sender, EventArgs e)
 		{
 			Refresh_AudioOutputs();
 			Refresh_SerialPorts();
+
+			updateTimer.Start();
+			audioCapture.Start();
 		}
 
 		private void Refresh_SerialPorts()
@@ -66,7 +67,7 @@ namespace AudioToSerial
 				this.audioOutputCombo.Items.Add(s);
 
 			}
-			
+
 			this.audioOutputCombo.SelectedIndex = selectedDeviceIndex + 1;
 		}
 
@@ -102,10 +103,8 @@ namespace AudioToSerial
 
 			try
 			{
-				currentWaveOut.DeviceNumber  = selectedDeviceIndex;
 
-				waveViewer.WaveStream = currentStream;
-			} 
+			}
 			catch
 			{
 				Console.Error.WriteLine("Oops! Dev error.");
@@ -116,6 +115,13 @@ namespace AudioToSerial
 		{
 			// the first (default device) is -1
 			return listIndex - 1;
+		}
+
+		private void AudioApp_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			audioCapture.StopCapture();
+			updateTimer.Stop();
+			updateTimer.Dispose();
 		}
 	}
 }
