@@ -14,7 +14,10 @@
 		private readonly WasapiLoopbackCapture capture;
 		private readonly BufferedWaveProvider buffer;
 		private readonly object lockObject = new object();
+
+		// TODO: make this customizeable
 		private const double SCALE_FACTOR = 1E6;
+		private const double AMP_THRESHOLD = 1E-4;
 
 		// expose to make easier
 		public WaveFormat WaveFormat;
@@ -22,7 +25,11 @@
 		public DesktopAudioCapture()
 		{
 			capture = new WasapiLoopbackCapture();
-			buffer = new BufferedWaveProvider(capture.WaveFormat);
+			buffer = new BufferedWaveProvider(capture.WaveFormat)
+			{ 
+				BufferLength = capture.WaveFormat.AverageBytesPerSecond / 2,
+				DiscardOnBufferOverflow = true
+			};
 
 			this.WaveFormat = capture.WaveFormat;
 			capture.DataAvailable += Capture_DataAvailable;
@@ -67,6 +74,9 @@
 			float[] samples = new float[samplesRecorded];
 			Buffer.BlockCopy(buffer, 0, samples, 0, bytesRecorded);
 
+			if (samples.Length == 0)
+				return new FrequencyBuckets();
+
 			// Apply FFT
 			Complex[] fftBuffer = new Complex[samples.Length];
 			for (int i = 0; i < samples.Length; i++)
@@ -91,7 +101,12 @@
 				double xSquared = fftBuffer[i].X * fftBuffer[i].X;
 				double ySquared = fftBuffer[i].Y * fftBuffer[i].Y;
 
-				magnitudes[i] = Math.Sqrt(xSquared + ySquared) * SCALE_FACTOR;
+				magnitudes[i] = Math.Sqrt(xSquared + ySquared);
+
+				if (magnitudes[i] < AMP_THRESHOLD)
+					magnitudes[i] = 0;
+				else
+					magnitudes[i] *= SCALE_FACTOR;
 			}
 
 			// Finally, convert to amplitude buckets!
@@ -215,17 +230,5 @@
 			capture.StopRecording();
 			capture.Dispose();
 		}
-	}
-
-	/// <summary>
-	/// A simple class to house the freq. bucket values (amplitudes)
-	/// </summary>
-	public class FrequencyBuckets
-	{
-		public double Low { get; set; }
-
-		public double Mid { get; set; }
-
-		public double High { get; set; }
 	}
 }

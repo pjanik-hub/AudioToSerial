@@ -101,7 +101,7 @@
 			waveViewer.Location = new Point(12, 307);
 			waveViewer.Name = "waveViewer";
 			waveViewer.SamplesPerPixel = 128;
-			waveViewer.Size = new Size(542, 188);
+			waveViewer.Size = new Size(381, 188);
 			waveViewer.StartPosition = 0L;
 			waveViewer.TabIndex = 9;
 			waveViewer.WaveStream = null;
@@ -109,35 +109,35 @@
 			// lowTextBox
 			// 
 			lowTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			lowTextBox.Location = new Point(278, 27);
+			lowTextBox.Location = new Point(259, 27);
 			lowTextBox.Name = "lowTextBox";
 			lowTextBox.ReadOnly = true;
-			lowTextBox.Size = new Size(231, 23);
+			lowTextBox.Size = new Size(134, 23);
 			lowTextBox.TabIndex = 10;
 			// 
 			// midTextBox
 			// 
 			midTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			midTextBox.Location = new Point(278, 115);
+			midTextBox.Location = new Point(259, 115);
 			midTextBox.Name = "midTextBox";
 			midTextBox.ReadOnly = true;
-			midTextBox.Size = new Size(231, 23);
+			midTextBox.Size = new Size(134, 23);
 			midTextBox.TabIndex = 11;
 			// 
 			// highTextBox
 			// 
 			highTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			highTextBox.Location = new Point(278, 203);
+			highTextBox.Location = new Point(259, 203);
 			highTextBox.Name = "highTextBox";
 			highTextBox.ReadOnly = true;
-			highTextBox.Size = new Size(231, 23);
+			highTextBox.Size = new Size(134, 23);
 			highTextBox.TabIndex = 12;
 			// 
 			// label2
 			// 
 			label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label2.AutoSize = true;
-			label2.Location = new Point(278, 9);
+			label2.Location = new Point(259, 9);
 			label2.Name = "label2";
 			label2.Size = new Size(29, 15);
 			label2.TabIndex = 13;
@@ -147,7 +147,7 @@
 			// 
 			label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label3.AutoSize = true;
-			label3.Location = new Point(278, 97);
+			label3.Location = new Point(259, 97);
 			label3.Name = "label3";
 			label3.Size = new Size(28, 15);
 			label3.TabIndex = 14;
@@ -157,7 +157,7 @@
 			// 
 			label4.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label4.AutoSize = true;
-			label4.Location = new Point(278, 185);
+			label4.Location = new Point(259, 185);
 			label4.Name = "label4";
 			label4.Size = new Size(33, 15);
 			label4.TabIndex = 15;
@@ -165,7 +165,8 @@
 			// 
 			// minLowTxtBox
 			// 
-			minLowTxtBox.Location = new Point(278, 71);
+			minLowTxtBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			minLowTxtBox.Location = new Point(259, 71);
 			minLowTxtBox.Margin = new Padding(3, 3, 3, 18);
 			minLowTxtBox.Name = "minLowTxtBox";
 			minLowTxtBox.ReadOnly = true;
@@ -174,8 +175,9 @@
 			// 
 			// label5
 			// 
+			label5.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label5.AutoSize = true;
-			label5.Location = new Point(278, 53);
+			label5.Location = new Point(259, 53);
 			label5.Name = "label5";
 			label5.Size = new Size(28, 15);
 			label5.TabIndex = 17;
@@ -183,8 +185,9 @@
 			// 
 			// label6
 			// 
+			label6.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label6.AutoSize = true;
-			label6.Location = new Point(348, 53);
+			label6.Location = new Point(329, 53);
 			label6.Name = "label6";
 			label6.Size = new Size(30, 15);
 			label6.TabIndex = 19;
@@ -192,7 +195,8 @@
 			// 
 			// maxLowTxtBox
 			// 
-			maxLowTxtBox.Location = new Point(348, 71);
+			maxLowTxtBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			maxLowTxtBox.Location = new Point(329, 71);
 			maxLowTxtBox.Margin = new Padding(3, 3, 3, 18);
 			maxLowTxtBox.Name = "maxLowTxtBox";
 			maxLowTxtBox.ReadOnly = true;
@@ -201,8 +205,9 @@
 			// 
 			// label7
 			// 
+			label7.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label7.AutoSize = true;
-			label7.Location = new Point(348, 141);
+			label7.Location = new Point(329, 141);
 			label7.Name = "label7";
 			label7.Size = new Size(30, 15);
 			label7.TabIndex = 23;
@@ -210,7 +215,8 @@
 			// 
 			// maxMidTxtBox
 			// 
-			maxMidTxtBox.Location = new Point(348, 159);
+			maxMidTxtBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			maxMidTxtBox.Location = new Point(329, 159);
 			maxMidTxtBox.Margin = new Padding(3, 3, 3, 18);
 			maxMidTxtBox.Name = "maxMidTxtBox";
 			maxMidTxtBox.ReadOnly = true;
@@ -219,8 +225,9 @@
 			// 
 			// label8
 			// 
+			label8.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label8.AutoSize = true;
-			label8.Location = new Point(278, 141);
+			label8.Location = new Point(259, 141);
 			label8.Name = "label8";
 			label8.Size = new Size(28, 15);
 			label8.TabIndex = 21;
@@ -228,7 +235,8 @@
 			// 
 			// minMidTxtBox
 			// 
-			minMidTxtBox.Location = new Point(278, 159);
+			minMidTxtBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			minMidTxtBox.Location = new Point(259, 159);
 			minMidTxtBox.Margin = new Padding(3, 3, 3, 18);
 			minMidTxtBox.Name = "minMidTxtBox";
 			minMidTxtBox.ReadOnly = true;
@@ -237,8 +245,9 @@
 			// 
 			// label9
 			// 
+			label9.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label9.AutoSize = true;
-			label9.Location = new Point(348, 229);
+			label9.Location = new Point(329, 229);
 			label9.Name = "label9";
 			label9.Size = new Size(30, 15);
 			label9.TabIndex = 27;
@@ -246,7 +255,8 @@
 			// 
 			// maxHighTxtBox
 			// 
-			maxHighTxtBox.Location = new Point(348, 247);
+			maxHighTxtBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			maxHighTxtBox.Location = new Point(329, 247);
 			maxHighTxtBox.Margin = new Padding(3, 3, 3, 18);
 			maxHighTxtBox.Name = "maxHighTxtBox";
 			maxHighTxtBox.ReadOnly = true;
@@ -255,8 +265,9 @@
 			// 
 			// label10
 			// 
+			label10.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			label10.AutoSize = true;
-			label10.Location = new Point(278, 229);
+			label10.Location = new Point(259, 229);
 			label10.Name = "label10";
 			label10.Size = new Size(28, 15);
 			label10.TabIndex = 25;
@@ -264,7 +275,8 @@
 			// 
 			// minHighTxtBox
 			// 
-			minHighTxtBox.Location = new Point(278, 247);
+			minHighTxtBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			minHighTxtBox.Location = new Point(259, 247);
 			minHighTxtBox.Margin = new Padding(3, 3, 3, 18);
 			minHighTxtBox.Name = "minHighTxtBox";
 			minHighTxtBox.ReadOnly = true;
@@ -275,7 +287,7 @@
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(566, 507);
+			ClientSize = new Size(405, 507);
 			Controls.Add(label9);
 			Controls.Add(maxHighTxtBox);
 			Controls.Add(label10);
