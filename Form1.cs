@@ -15,7 +15,7 @@ namespace AudioToSerial
 
 		private const int SAMPLES_PER_PIXEL = 2;
 		private const int FORM_UPDT_INTERVAL = 80;
-		private const int BAUD_RATE = 14400;
+		private const int BAUD_RATE = 9600;
 		private const string STRING_FORMAT = "0.##E+0";
 
 		// TODO: can remove min since we only use positive freqs
@@ -40,7 +40,6 @@ namespace AudioToSerial
 
 			FrequencyBuckets = new FrequencyBuckets();
 			audioToPort = new FrequencyToSerial();
-			audioToPort.ConnectPort("COM6", 9600); // using COM6 with serial cable
 		}
 
 		private void UpdateTimer_Tick(object? sender, EventArgs e)
@@ -49,24 +48,36 @@ namespace AudioToSerial
 			{
 				byte[] buffer = audioCapture.GetBufferForWaveViewer();
 
-				if (buffer.Length > 0)
-				{
-					FrequencyBuckets freq = audioCapture.GetFrequencyBuckets();
-					UpdateFrequencyAmplitudes(freq);
-					audioToPort.SendData(freq);
-
-					Console.WriteLine($"Data out: low={freq.Low},mid={freq.Mid},high={freq.High}");
-
-					using (var waveStream = new RawSourceWaveStream(buffer, 0, buffer.Length, audioCapture.WaveFormat))
-					{
-						this.waveViewer.WaveStream = waveStream;
-						this.waveViewer.Refresh();
-					}
-				}
+				UpdateFrequencies(buffer);
 			}
 			catch
 			{
 				Console.Error.WriteLine("Bad things happened!");
+			}
+		}
+
+		private void UpdateFrequencies(byte[] buffer)
+		{
+			if (buffer.Length > 0)
+			{
+				// grab the new buckets
+				FrequencyBuckets freq = audioCapture.GetFrequencyBuckets();
+				UpdateFrequencyAmplitudes(freq);
+
+				// send data if the port is connected
+				if (audioToPort.IsConnected)
+					audioToPort.SendData(freq);
+
+				UpdateWaveViewer(buffer);
+			}
+		}
+
+		private void UpdateWaveViewer(byte[] buffer)
+		{
+			using (var waveStream = new RawSourceWaveStream(buffer, 0, buffer.Length, audioCapture.WaveFormat))
+			{
+				this.waveViewer.WaveStream = waveStream;
+				this.waveViewer.Refresh();
 			}
 		}
 
@@ -142,6 +153,8 @@ namespace AudioToSerial
 
 			if (portName == null)
 				return;
+
+			audioToPort.ConnectPort(portName, BAUD_RATE); // using COM6 with serial cable
 		}
 
 		private void AudioApp_FormClosing(object sender, FormClosingEventArgs e)
