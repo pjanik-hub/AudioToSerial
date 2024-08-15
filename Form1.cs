@@ -2,82 +2,73 @@ namespace AudioToSerial
 {
 	using NAudio.Wave;
 	using System.IO.Ports;
-	using Timer = System.Windows.Forms.Timer;
+	using System.Numerics;
 
 	public partial class AudioApp : Form
 	{
-		private SerialPort? currentPort = null;
-		private readonly DesktopAudioCapture audioCapture;
-		private readonly Timer updateTimer;
-		private readonly FrequencyBuckets FrequencyBuckets;
-		private readonly FrequencyToSerial audioToPort;
+		SerialPort? currentPort = null;
+		readonly FrequencyBuckets FrequencyBuckets;
+		readonly FrequencyToSerial audioToPort;
 
-		private const int SAMPLES_PER_PIXEL = 2;
-		private const int FORM_UPDT_INTERVAL = 80;
-		private const int BAUD_RATE = 9600;
-		private const string STRING_FORMAT = "0.##E+0";
+		const int BAUD_RATE = 9600;
+		const string STRING_FORMAT = "0.##E+0";
+
+		const int Sample_Rate = 44100;
+		const int Buffer_MS = 100;
+		readonly TimeSpan Buffer_Length = new(0, 0, 0, 0, Buffer_MS);
+
+		readonly WasapiLoopbackCapture Audio_Capture;
+		readonly double[] Audio_Data;
+		readonly double[] FFT_Data;
+		readonly int Audio_Data_Length = Sample_Rate * Buffer_MS / 1000;
+		readonly int FFT_Data_Length;
 
 		// TODO: can remove min since we only use positive freqs
-		private double minLowFreq = double.PositiveInfinity;
-		private double maxLowFreq = double.NegativeInfinity;
-		private double minMidFreq = double.PositiveInfinity;
-		private double maxMidFreq = double.NegativeInfinity;
-		private double minHighFreq = double.PositiveInfinity;
-		private double maxHighFreq = double.NegativeInfinity;
+		double minLowFreq = double.PositiveInfinity;
+		double maxLowFreq = double.NegativeInfinity;
+		double minMidFreq = double.PositiveInfinity;
+		double maxMidFreq = double.NegativeInfinity;
+		double minHighFreq = double.PositiveInfinity;
+		double maxHighFreq = double.NegativeInfinity;
 
 		public AudioApp()
 		{
 			InitializeComponent();
 
-			audioCapture = new DesktopAudioCapture();
+			Audio_Data = new double[Audio_Data_Length];
 
-			this.waveViewer.SamplesPerPixel = SAMPLES_PER_PIXEL;
+			double[] paddedAudio = FftSharp.Pad.ZeroPad(Audio_Data);
+			Complex[] complexFft = FftSharp.FFT.Forward(paddedAudio);
+			double[] fftAmplitudes = FftSharp.FFT.Magnitude(complexFft);
 
-			updateTimer = new Timer();
-			updateTimer.Interval = FORM_UPDT_INTERVAL;
-			updateTimer.Tick += UpdateTimer_Tick;
+			FFT_Data_Length = fftAmplitudes.Length;
+			FFT_Data = new double[fftAmplitudes.Length];
+
+			double fftPeriod = FftSharp.Transform.FFTfreqPeriod(Sample_Rate, fftAmplitudes.Length);
+
+			fftPlot.Plot.Add.Signal(FFT_Data, 1 / fftPeriod);
+			fftPlot.Plot.XLabel("PWR");
+			fftPlot.Plot.XLabel("Freq. (kHz)");
+			fftPlot.Refresh();
+
+			this.Audio_Capture = new WasapiLoopbackCapture()
+			{
+				WaveFormat = new WaveFormat(Sample_Rate, 16, 1),
+			};
+			this.Audio_Capture.DataAvailable += Audio_Capture_DataAvailable;
 
 			FrequencyBuckets = new FrequencyBuckets();
 			audioToPort = new FrequencyToSerial();
+
+			timer1.Interval = Buffer_MS;
 		}
 
-		private void UpdateTimer_Tick(object? sender, EventArgs e)
+		private void Audio_Capture_DataAvailable(object? sender, WaveInEventArgs e)
 		{
-			try
-			{
-				byte[] buffer = audioCapture.GetBufferForWaveViewer();
+			int sampleCount = e.Buffer.Length / 2;
 
-				UpdateFrequencies(buffer);
-			}
-			catch
-			{
-				Console.Error.WriteLine("Bad things happened!");
-			}
-		}
-
-		private void UpdateFrequencies(byte[] buffer)
-		{
-			if (buffer.Length > 0)
-			{
-				// grab the new buckets
-				FrequencyBuckets freq = audioCapture.GetFrequencyBuckets();
-				UpdateFrequencyAmplitudes(freq);
-
-				// send data if the port is connected
-				if (audioToPort.IsConnected)
-					audioToPort.SendData(freq);
-
-				UpdateWaveViewer(buffer);
-			}
-		}
-
-		private void UpdateWaveViewer(byte[] buffer)
-		{
-			using (var waveStream = new RawSourceWaveStream(buffer, 0, buffer.Length, audioCapture.WaveFormat))
-			{
-				this.waveViewer.WaveStream = waveStream;
-				this.waveViewer.Refresh();
-			}
+			for (int i = 0; i < Audio_Data_Length && i < sampleCount; i++)
+				Audio_Data[i] = BitConverter.ToInt16(e.Buffer, i * 2);
 		}
 
 		private void UpdateFrequencyAmplitudes(FrequencyBuckets frequencyBuckets)
@@ -129,8 +120,16 @@ namespace AudioToSerial
 		{
 			Refresh_SerialPorts();
 
-			updateTimer.Start();
-			audioCapture.Start();
+			EmptyFillAudioData();
+			Audio_Capture.StartRecording();
+
+			timer1.Start();
+		}
+
+		private void EmptyFillAudioData()
+		{
+			for (int i = 0; i < Audio_Data_Length; i++)
+				Audio_Data[i] = 0;
 		}
 
 		private void Refresh_SerialPorts()
@@ -148,7 +147,7 @@ namespace AudioToSerial
 
 		private void bindButton_Click(object sender, EventArgs e)
 		{
-			string? portName = (string?) serialsCombo.SelectedItem;
+			string? portName = (string?)serialsCombo.SelectedItem;
 
 			if (portName == null)
 				return;
@@ -158,9 +157,32 @@ namespace AudioToSerial
 
 		private void AudioApp_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			audioCapture.StopCapture();
-			updateTimer.Stop();
-			updateTimer.Dispose();
+			Audio_Capture.StopRecording();
+			Audio_Capture.Dispose();
+			timer1.Stop();
+			timer1.Dispose();
+		}
+
+		private void timer1_Tick(object sender, EventArgs e)
+		{
+			double[] paddedAudio = FftSharp.Pad.ZeroPad(Audio_Data);
+			Complex[] complexFft = FftSharp.FFT.Forward(paddedAudio);
+			double[] fftAmplitudes = FftSharp.FFT.Magnitude(complexFft);
+
+			Array.Copy(fftAmplitudes, FFT_Data, fftAmplitudes.Length);
+
+			double fftPeakAmp = fftAmplitudes.Max();
+			double plotYMax = fftPlot.Plot.Axes.GetLimits().Top;
+
+			fftPlot.Plot.Axes.SetLimits(
+				0,
+				20,
+				0,
+				Math.Max(fftPeakAmp, plotYMax)
+			);
+
+			// fftPlot.Plot.Add.Signal(FFT_Data);
+			fftPlot.Refresh();
 		}
 	}
 }
