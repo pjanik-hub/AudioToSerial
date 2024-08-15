@@ -14,8 +14,7 @@ namespace AudioToSerial
 		const string STRING_FORMAT = "0.##E+0";
 
 		const int Sample_Rate = 44100;
-		const int Buffer_MS = 100;
-		readonly TimeSpan Buffer_Length = new(0, 0, 0, 0, Buffer_MS);
+		const int Buffer_MS = 120;
 
 		readonly WasapiLoopbackCapture Audio_Capture;
 		readonly double[] Audio_Data;
@@ -60,7 +59,7 @@ namespace AudioToSerial
 			FrequencyBuckets = new FrequencyBuckets();
 			audioToPort = new FrequencyToSerial();
 
-			timer1.Interval = Buffer_MS;
+			timer1.Interval = 80;
 		}
 
 		private void Audio_Capture_DataAvailable(object? sender, WaveInEventArgs e)
@@ -118,7 +117,7 @@ namespace AudioToSerial
 
 		private void AudioApp_Load(object sender, EventArgs e)
 		{
-			Refresh_SerialPorts();
+			Refresh_SerialPorts(true);
 
 			EmptyFillAudioData();
 			Audio_Capture.StartRecording();
@@ -132,12 +131,17 @@ namespace AudioToSerial
 				Audio_Data[i] = 0;
 		}
 
-		private void Refresh_SerialPorts()
+		private void Refresh_SerialPorts(bool firstTime = false)
 		{
 			string[] ports = SerialPort.GetPortNames();
 
 			serialsCombo.Items.Clear();
 			serialsCombo.Items.AddRange(ports);
+
+			if (firstTime)
+				bindResult.Text = "";
+			else
+				bindResult.Text = "Refreshed ports!";
 		}
 
 		private void refreshSerialButton_Click(object sender, EventArgs e)
@@ -150,15 +154,30 @@ namespace AudioToSerial
 			string? portName = (string?)serialsCombo.SelectedItem;
 
 			if (portName == null)
+			{
+				bindResult.Text = "Invalid port name: NULL";
 				return;
+			}
 
-			audioToPort.ConnectPort(portName, BAUD_RATE); // using COM6 with serial cable
+			try
+			{
+				audioToPort.ConnectPort(portName, BAUD_RATE);
+				bindResult.Text = $"Successfully connected to {portName}!";
+			} 
+			catch
+			{
+				bindResult.Text = $"Invalid port name: {portName}";
+			}
 		}
 
 		private void AudioApp_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			Audio_Capture.StopRecording();
 			Audio_Capture.Dispose();
+
+			if (currentPort != null && currentPort.IsOpen)
+				currentPort.Close();
+
 			timer1.Stop();
 			timer1.Dispose();
 		}
@@ -178,7 +197,7 @@ namespace AudioToSerial
 				0,
 				20,
 				0,
-				Math.Max(fftPeakAmp, plotYMax)
+				Math.Min(Math.Max(fftPeakAmp, plotYMax), 100)
 			);
 
 			// fftPlot.Plot.Add.Signal(FFT_Data);

@@ -53,6 +53,7 @@
 			minHighTxtBox = new TextBox();
 			fftPlot = new ScottPlot.WinForms.FormsPlot();
 			timer1 = new System.Windows.Forms.Timer(components);
+			bindResult = new Label();
 			SuspendLayout();
 			// 
 			// serialsCombo
@@ -285,11 +286,20 @@
 			// 
 			timer1.Tick += timer1_Tick;
 			// 
+			// bindResult
+			// 
+			bindResult.AutoSize = true;
+			bindResult.Location = new Point(12, 111);
+			bindResult.Name = "bindResult";
+			bindResult.Size = new Size(0, 15);
+			bindResult.TabIndex = 29;
+			// 
 			// AudioApp
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(444, 507);
+			Controls.Add(bindResult);
 			Controls.Add(fftPlot);
 			Controls.Add(label9);
 			Controls.Add(maxHighTxtBox);
@@ -347,5 +357,6 @@
 		private TextBox minHighTxtBox;
 		private ScottPlot.WinForms.FormsPlot fftPlot;
 		private System.Windows.Forms.Timer timer1;
+		private Label bindResult;
 	}
 }
