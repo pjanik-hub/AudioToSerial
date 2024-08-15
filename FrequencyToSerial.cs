@@ -5,9 +5,13 @@
 
 	public class FrequencyToSerial
 	{
-		public FrequencyToSerial() { }
+		public FrequencyToSerial() 
+		{
+			CurrentPort = null;
+			IsConnected = false;
+		}
 
-		public SerialPort? currentPort { get; private set; }
+		public SerialPort? CurrentPort { get; private set; }
 		public bool IsConnected { get; private set; }
 
 		public void ConnectPort(string portName, int baudRate)
@@ -15,27 +19,27 @@
 			SerialPort port = new(portName, baudRate, Parity.None);
 			port.Handshake = Handshake.None;
 
-			this.currentPort = port;
 			ClosePort();
-			this.currentPort.Open();
+			this.CurrentPort = port;
+			this.CurrentPort.Open();
 
 			IsConnected = true;
 		}
 
 		public void SendData(FrequencyBuckets bucket)
 		{
-			if (this.currentPort == null || this.currentPort.IsOpen == false)
+			if (this.CurrentPort == null || this.CurrentPort.IsOpen == false)
 				return;
 
 			string json = SerializeFrequencies(bucket);
-			this.currentPort.WriteLine(json);
+			this.CurrentPort.WriteLine(json);
 		}
 
 		public void ClosePort()
 		{
-			if (this.currentPort != null && this.currentPort.IsOpen)
+			if (this.CurrentPort != null && this.CurrentPort.IsOpen)
 			{
-				this.currentPort.Close();
+				this.CurrentPort.Close();
 				IsConnected = false;
 			}
 		}

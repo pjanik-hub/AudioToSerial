@@ -1,7 +1,6 @@
 namespace AudioToSerial
 {
 	using NAudio.Wave;
-	using System.ComponentModel;
 	using System.IO.Ports;
 	using Timer = System.Windows.Forms.Timer;
 
@@ -149,7 +148,7 @@ namespace AudioToSerial
 
 		private void bindButton_Click(object sender, EventArgs e)
 		{
-			string? portName = (string?)serialsCombo.SelectedItem;
+			string? portName = (string?) serialsCombo.SelectedItem;
 
 			if (portName == null)
 				return;
