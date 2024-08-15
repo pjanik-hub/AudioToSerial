@@ -3,6 +3,9 @@
 	using System.IO.Ports;
 	using Newtonsoft.Json;
 
+	/// <summary>
+	/// Small wrapper to send freq. data to COM port
+	/// </summary>
 	public class FrequencyToSerial
 	{
 		public FrequencyToSerial() 

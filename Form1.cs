@@ -11,24 +11,17 @@ namespace AudioToSerial
 		readonly FrequencyToSerial audioToPort;
 
 		const int BAUD_RATE = 9600;
-		const string STRING_FORMAT = "0.##E+0";
 
 		const int Sample_Rate = 44100;
-		const int Buffer_MS = 120;
+		const int Buffer_MS = 80;
 
 		readonly WasapiLoopbackCapture Audio_Capture;
 		readonly double[] Audio_Data;
 		readonly double[] FFT_Data;
+		readonly double[] FFT_Freqs;
 		readonly int Audio_Data_Length = Sample_Rate * Buffer_MS / 1000;
 		readonly int FFT_Data_Length;
-
-		// TODO: can remove min since we only use positive freqs
-		double minLowFreq = double.PositiveInfinity;
-		double maxLowFreq = double.NegativeInfinity;
-		double minMidFreq = double.PositiveInfinity;
-		double maxMidFreq = double.NegativeInfinity;
-		double minHighFreq = double.PositiveInfinity;
-		double maxHighFreq = double.NegativeInfinity;
+		readonly int FFT_Freqs_Length;
 
 		public AudioApp()
 		{
@@ -37,16 +30,19 @@ namespace AudioToSerial
 			Audio_Data = new double[Audio_Data_Length];
 
 			double[] paddedAudio = FftSharp.Pad.ZeroPad(Audio_Data);
-			Complex[] complexFft = FftSharp.FFT.Forward(paddedAudio);
-			double[] fftAmplitudes = FftSharp.FFT.Magnitude(complexFft);
+			Complex[] complexData = FftSharp.FFT.Forward(paddedAudio);
+
+			double[] fftAmplitudes = FftSharp.FFT.Power(complexData);
+			double[] fftFrequencyScale = FftSharp.FFT.FrequencyScale(fftAmplitudes.Length, Sample_Rate);
 
 			FFT_Data_Length = fftAmplitudes.Length;
 			FFT_Data = new double[fftAmplitudes.Length];
 
-			double fftPeriod = FftSharp.Transform.FFTfreqPeriod(Sample_Rate, fftAmplitudes.Length);
+			FFT_Freqs_Length = fftFrequencyScale.Length;
+			FFT_Freqs = new double[fftFrequencyScale.Length];
 
-			fftPlot.Plot.Add.Signal(FFT_Data, 1 / fftPeriod);
-			fftPlot.Plot.XLabel("PWR");
+			fftPlot.Plot.Add.SignalXY(FFT_Freqs, FFT_Data);
+			fftPlot.Plot.YLabel("PWR (RMS)");
 			fftPlot.Plot.XLabel("Freq. (kHz)");
 			fftPlot.Refresh();
 
@@ -59,7 +55,7 @@ namespace AudioToSerial
 			FrequencyBuckets = new FrequencyBuckets();
 			audioToPort = new FrequencyToSerial();
 
-			timer1.Interval = 80;
+			timer1.Interval = 40;
 		}
 
 		private void Audio_Capture_DataAvailable(object? sender, WaveInEventArgs e)
@@ -70,56 +66,16 @@ namespace AudioToSerial
 				Audio_Data[i] = BitConverter.ToInt16(e.Buffer, i * 2);
 		}
 
-		private void UpdateFrequencyAmplitudes(FrequencyBuckets frequencyBuckets)
-		{
-			this.lowTextBox.Text = GetFriendlyTextFromFreq(frequencyBuckets.Low);
-			this.midTextBox.Text = GetFriendlyTextFromFreq(frequencyBuckets.Mid);
-			this.highTextBox.Text = GetFriendlyTextFromFreq(frequencyBuckets.High);
-
-			if (frequencyBuckets.Low < minLowFreq)
-			{
-				minLowFreq = frequencyBuckets.Low;
-				this.minLowTxtBox.Text = GetFriendlyTextFromFreq(minLowFreq);
-			}
-			if (frequencyBuckets.Low > maxLowFreq)
-			{
-				maxLowFreq = frequencyBuckets.Low;
-				this.maxLowTxtBox.Text = GetFriendlyTextFromFreq(maxLowFreq);
-			}
-
-			if (frequencyBuckets.Mid < minMidFreq)
-			{
-				minMidFreq = frequencyBuckets.Mid;
-				this.minMidTxtBox.Text = GetFriendlyTextFromFreq(minMidFreq);
-			}
-			if (frequencyBuckets.Mid > maxMidFreq)
-			{
-				maxMidFreq = frequencyBuckets.Mid;
-				this.maxMidTxtBox.Text = GetFriendlyTextFromFreq(maxMidFreq);
-			}
-
-			if (frequencyBuckets.High < minHighFreq)
-			{
-				minHighFreq = frequencyBuckets.High;
-				this.minHighTxtBox.Text = GetFriendlyTextFromFreq(minHighFreq);
-			}
-			if (frequencyBuckets.High > maxHighFreq)
-			{
-				maxHighFreq = frequencyBuckets.High;
-				this.maxHighTxtBox.Text = GetFriendlyTextFromFreq(maxHighFreq);
-			}
-		}
-
-		private string GetFriendlyTextFromFreq(double input)
-		{
-			return input.ToString(STRING_FORMAT);
-		}
-
+		/// <summary>
+		/// Initial setup of arrays/data
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void AudioApp_Load(object sender, EventArgs e)
 		{
 			Refresh_SerialPorts(true);
-
 			EmptyFillAudioData();
+
 			Audio_Capture.StartRecording();
 
 			timer1.Start();
@@ -163,7 +119,7 @@ namespace AudioToSerial
 			{
 				audioToPort.ConnectPort(portName, BAUD_RATE);
 				bindResult.Text = $"Successfully connected to {portName}!";
-			} 
+			}
 			catch
 			{
 				bindResult.Text = $"Invalid port name: {portName}";
@@ -184,24 +140,46 @@ namespace AudioToSerial
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
-			double[] paddedAudio = FftSharp.Pad.ZeroPad(Audio_Data);
-			Complex[] complexFft = FftSharp.FFT.Forward(paddedAudio);
-			double[] fftAmplitudes = FftSharp.FFT.Magnitude(complexFft);
+			try
+			{
+				var window = new FftSharp.Windows.Hanning();
+				window.ApplyInPlace(Audio_Data);
 
-			Array.Copy(fftAmplitudes, FFT_Data, fftAmplitudes.Length);
+				double[] paddedAudio = FftSharp.Pad.ZeroPad(Audio_Data);
+				Complex[] complexData = FftSharp.FFT.Forward(paddedAudio);
 
-			double fftPeakAmp = fftAmplitudes.Max();
-			double plotYMax = fftPlot.Plot.Axes.GetLimits().Top;
+				double[] fftAmplitudes = this.powerCheckBox.Checked ?
+					FftSharp.FFT.Power(complexData) :    // dB
+					FftSharp.FFT.Magnitude(complexData); // RMS
+				double[] fftFrequencyScale = FftSharp.FFT.FrequencyScale(fftAmplitudes.Length, Sample_Rate);
 
-			fftPlot.Plot.Axes.SetLimits(
-				0,
-				20,
-				0,
-				Math.Min(Math.Max(fftPeakAmp, plotYMax), 100)
-			);
+				Array.Copy(fftAmplitudes, FFT_Data, FFT_Data_Length);
+				Array.Copy(fftFrequencyScale, FFT_Freqs, FFT_Freqs_Length);
 
-			// fftPlot.Plot.Add.Signal(FFT_Data);
-			fftPlot.Refresh();
+				double fftPeakAmp = fftAmplitudes.Max();
+				double plotYMax = fftPlot.Plot.Axes.GetLimits().Top;
+				fftPlot.Plot.Axes.SetLimits(
+					0,
+					20_000,
+					0,
+					Math.Min(Math.Max(fftPeakAmp, plotYMax), 120) // max at 120 PWR
+				);
+
+				// fftPlot.Plot.Add.Signal(FFT_Data);
+				fftPlot.Refresh();
+			}
+			catch
+			{
+				System.Diagnostics.Debug.WriteLine("Error in timer");
+			}
+		}
+
+		private void powerCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (this.powerCheckBox.Checked)
+				this.fftPlot.Plot.YLabel("PWR (dB)");
+			else
+				this.fftPlot.Plot.YLabel("PWR (RMS)");
 		}
 	}
 }
