@@ -1,5 +1,6 @@
 namespace AudioToSerial
 {
+	using FftSharp.Windows;
 	using NAudio.Wave;
 	using System.IO.Ports;
 	using System.Numerics;
@@ -11,15 +12,16 @@ namespace AudioToSerial
 		readonly FrequencyToSerial audioToPort;
 
 		const int BAUD_RATE = 9600;
+		const int SAMPLE_RATE = 44100;
+		const int BUFFER_MS = 80;
 
-		const int Sample_Rate = 44100;
-		const int Buffer_MS = 80;
+		const int MAX_DB = 140;
 
 		readonly WasapiLoopbackCapture Audio_Capture;
 		readonly double[] Audio_Data;
 		readonly double[] FFT_Data;
 		readonly double[] FFT_Freqs;
-		readonly int Audio_Data_Length = Sample_Rate * Buffer_MS / 1000;
+		readonly int Audio_Data_Length = SAMPLE_RATE * BUFFER_MS / 1000;
 		readonly int FFT_Data_Length;
 		readonly int FFT_Freqs_Length;
 
@@ -33,7 +35,7 @@ namespace AudioToSerial
 			Complex[] complexData = FftSharp.FFT.Forward(paddedAudio);
 
 			double[] fftAmplitudes = FftSharp.FFT.Power(complexData);
-			double[] fftFrequencyScale = FftSharp.FFT.FrequencyScale(fftAmplitudes.Length, Sample_Rate);
+			double[] fftFrequencyScale = FftSharp.FFT.FrequencyScale(fftAmplitudes.Length, SAMPLE_RATE);
 
 			FFT_Data_Length = fftAmplitudes.Length;
 			FFT_Data = new double[fftAmplitudes.Length];
@@ -43,12 +45,12 @@ namespace AudioToSerial
 
 			fftPlot.Plot.Add.SignalXY(FFT_Freqs, FFT_Data);
 			fftPlot.Plot.YLabel("PWR (RMS)");
-			fftPlot.Plot.XLabel("Freq. (kHz)");
+			fftPlot.Plot.XLabel("Freq. (Hz)");
 			fftPlot.Refresh();
 
 			this.Audio_Capture = new WasapiLoopbackCapture()
 			{
-				WaveFormat = new WaveFormat(Sample_Rate, 16, 1),
+				WaveFormat = new WaveFormat(SAMPLE_RATE, 16, 1),
 			};
 			this.Audio_Capture.DataAvailable += Audio_Capture_DataAvailable;
 
@@ -142,30 +144,52 @@ namespace AudioToSerial
 		{
 			try
 			{
-				var window = new FftSharp.Windows.Hanning();
+				// window the data first
+				Hanning window = new();
+				window.Create(Audio_Data_Length);
 				window.ApplyInPlace(Audio_Data);
 
+				// pad (to nearest power of 2) and prep data
 				double[] paddedAudio = FftSharp.Pad.ZeroPad(Audio_Data);
 				Complex[] complexData = FftSharp.FFT.Forward(paddedAudio);
 
+				// calculate amplitudes based on checkbox
 				double[] fftAmplitudes = this.powerCheckBox.Checked ?
 					FftSharp.FFT.Power(complexData) :    // dB
 					FftSharp.FFT.Magnitude(complexData); // RMS
-				double[] fftFrequencyScale = FftSharp.FFT.FrequencyScale(fftAmplitudes.Length, Sample_Rate);
+				double[] fftFrequencyScale = FftSharp.FFT.FrequencyScale(fftAmplitudes.Length, SAMPLE_RATE);
 
+				// finally, place data into collections the Plot can read
 				Array.Copy(fftAmplitudes, FFT_Data, FFT_Data_Length);
 				Array.Copy(fftFrequencyScale, FFT_Freqs, FFT_Freqs_Length);
 
+				// some simple auto-scaling
 				double fftPeakAmp = fftAmplitudes.Max();
 				double plotYMax = fftPlot.Plot.Axes.GetLimits().Top;
 				fftPlot.Plot.Axes.SetLimits(
 					0,
 					20_000,
 					0,
-					Math.Min(Math.Max(fftPeakAmp, plotYMax), 120) // max at 120 PWR
+					Math.Max(fftPeakAmp, plotYMax)
 				);
 
-				// fftPlot.Plot.Add.Signal(FFT_Data);
+				var bucket = CalculateFrequencyBuckets(fftFrequencyScale, fftAmplitudes);
+
+				if (bucket.Low >= 5)
+					this.lowTxtBx.Text = bucket.Low.ToString("0.##E+0");
+				else
+					this.lowTxtBx.Text = "0.00";
+
+				if (bucket.Mid >= 5)
+					this.midTxtBx.Text = bucket.Mid.ToString("0.##E+0");
+				else
+					this.midTxtBx.Text = "0.00";
+
+				if (bucket.High >= 5)
+					this.highTxtBx.Text = bucket.High.ToString("0.##E+0");
+				else
+					this.highTxtBx.Text = "0.00";
+
 				fftPlot.Refresh();
 			}
 			catch
@@ -180,6 +204,92 @@ namespace AudioToSerial
 				this.fftPlot.Plot.YLabel("PWR (dB)");
 			else
 				this.fftPlot.Plot.YLabel("PWR (RMS)");
+
+			ResetYAxisScaling();
+		}
+
+		static FrequencyBuckets CalculateFrequencyBuckets(double[] fftXVals, double[] fftYVals)
+		{
+			int lowStart = 0;
+			int lowEnd = 400;
+
+			int midStart = 401;
+			int midEnd = 2000;
+
+			int highStart = 2001;
+			int highEnd = 20000;
+
+			int lowStartIndex = 0;
+			int lowEndIndex = GetClosestNumberIndex(fftXVals, lowEnd);
+
+			int midStartIndex = lowEndIndex + 1;
+			int midEndIndex = GetClosestNumberIndex(fftXVals, midEnd);
+
+			int highStartIndex = midEndIndex + 1;
+			int highEndIndex = fftXVals.Length - 1;
+
+			if (lowEndIndex <= lowStartIndex)
+				throw new Exception();
+			if (midEndIndex <= midStartIndex)
+				throw new Exception();
+			if (highEndIndex <= highStartIndex)
+				throw new Exception();
+
+			double lowVal = AggregateValues(fftYVals, lowStartIndex, lowEndIndex);
+			double midVal = AggregateValues(fftYVals, midStartIndex, midEndIndex);
+			double highVal = AggregateValues(fftYVals, highStartIndex, highEndIndex);
+
+			return new FrequencyBuckets
+			{
+				Low = lowVal,
+				Mid = midVal,
+				High = highVal,
+			};
+		}
+
+		static double AggregateValues(double[] values, int startIndex, int endIndex)
+		{
+			double result = 0;
+
+			for (int i = startIndex; i < endIndex; i++)
+				result += values[i];
+
+			return result / (endIndex - startIndex);
+        }
+
+		static int GetClosestNumberIndex(double[] values, int target)
+		{
+			if (values.Length <= 0)
+				return -1;
+
+			int closest = 0;
+			double closestDifference = double.PositiveInfinity;
+
+            for (int i = 0; i < values.Length; i++)
+            {
+				double difference = Math.Abs(values[i] - target);
+
+				if (difference < closestDifference)
+				{
+					closest = i;
+					closestDifference = difference;
+				}
+            }
+
+            return closest;
+		}
+
+		/// <summary>
+		/// Reset the graph to 'default' state
+		/// </summary>
+		private void ResetYAxisScaling()
+		{
+			fftPlot.Plot.Axes.SetLimits(
+				0,
+				20_000,
+				0,
+				60
+			);
 		}
 	}
 }

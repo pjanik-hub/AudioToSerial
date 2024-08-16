@@ -10,5 +10,7 @@
 		public double Mid { get; set; }
 
 		public double High { get; set; }
+
+
 	}
 }

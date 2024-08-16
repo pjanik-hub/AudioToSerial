@@ -37,6 +37,12 @@
 			timer1 = new System.Windows.Forms.Timer(components);
 			bindResult = new Label();
 			powerCheckBox = new CheckBox();
+			lowTxtBx = new TextBox();
+			midTxtBx = new TextBox();
+			label2 = new Label();
+			label3 = new Label();
+			label4 = new Label();
+			highTxtBx = new TextBox();
 			SuspendLayout();
 			// 
 			// serialsCombo
@@ -86,7 +92,7 @@
 			fftPlot.Location = new Point(12, 162);
 			fftPlot.Margin = new Padding(4);
 			fftPlot.Name = "fftPlot";
-			fftPlot.Size = new Size(657, 186);
+			fftPlot.Size = new Size(498, 186);
 			fftPlot.TabIndex = 28;
 			// 
 			// timer1
@@ -112,11 +118,77 @@
 			powerCheckBox.UseVisualStyleBackColor = true;
 			powerCheckBox.CheckedChanged += powerCheckBox_CheckedChanged;
 			// 
+			// lowTxtBx
+			// 
+			lowTxtBx.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			lowTxtBx.Location = new Point(403, 27);
+			lowTxtBx.Name = "lowTxtBx";
+			lowTxtBx.ReadOnly = true;
+			lowTxtBx.Size = new Size(107, 23);
+			lowTxtBx.TabIndex = 31;
+			lowTxtBx.TextAlign = HorizontalAlignment.Right;
+			// 
+			// midTxtBx
+			// 
+			midTxtBx.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			midTxtBx.Location = new Point(403, 71);
+			midTxtBx.Name = "midTxtBx";
+			midTxtBx.ReadOnly = true;
+			midTxtBx.Size = new Size(107, 23);
+			midTxtBx.TabIndex = 32;
+			midTxtBx.TextAlign = HorizontalAlignment.Right;
+			// 
+			// label2
+			// 
+			label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			label2.AutoSize = true;
+			label2.Location = new Point(480, 9);
+			label2.Name = "label2";
+			label2.Size = new Size(29, 15);
+			label2.TabIndex = 33;
+			label2.Text = "Low";
+			// 
+			// label3
+			// 
+			label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			label3.AutoSize = true;
+			label3.Location = new Point(482, 53);
+			label3.Name = "label3";
+			label3.Size = new Size(28, 15);
+			label3.TabIndex = 34;
+			label3.Text = "Mid";
+			// 
+			// label4
+			// 
+			label4.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			label4.AutoSize = true;
+			label4.Location = new Point(477, 97);
+			label4.Name = "label4";
+			label4.Size = new Size(33, 15);
+			label4.TabIndex = 36;
+			label4.Text = "High";
+			// 
+			// highTxtBx
+			// 
+			highTxtBx.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			highTxtBx.Location = new Point(403, 115);
+			highTxtBx.Name = "highTxtBx";
+			highTxtBx.ReadOnly = true;
+			highTxtBx.Size = new Size(107, 23);
+			highTxtBx.TabIndex = 35;
+			highTxtBx.TextAlign = HorizontalAlignment.Right;
+			// 
 			// AudioApp
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(724, 361);
+			ClientSize = new Size(522, 361);
+			Controls.Add(label4);
+			Controls.Add(highTxtBx);
+			Controls.Add(label3);
+			Controls.Add(label2);
+			Controls.Add(midTxtBx);
+			Controls.Add(lowTxtBx);
 			Controls.Add(powerCheckBox);
 			Controls.Add(bindResult);
 			Controls.Add(fftPlot);
@@ -124,7 +196,7 @@
 			Controls.Add(bindButton);
 			Controls.Add(refreshSerialButton);
 			Controls.Add(serialsCombo);
-			MinimumSize = new Size(418, 400);
+			MinimumSize = new Size(538, 400);
 			Name = "AudioApp";
 			Text = "Audio2Serial";
 			FormClosing += AudioApp_FormClosing;
@@ -143,5 +215,11 @@
 		private System.Windows.Forms.Timer timer1;
 		private Label bindResult;
 		private CheckBox powerCheckBox;
+		private TextBox lowTxtBx;
+		private TextBox midTxtBx;
+		private Label label2;
+		private Label label3;
+		private Label label4;
+		private TextBox highTxtBx;
 	}
 }
