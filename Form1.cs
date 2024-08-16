@@ -13,9 +13,7 @@ namespace AudioToSerial
 
 		const int BAUD_RATE = 9600;
 		const int SAMPLE_RATE = 44100;
-		const int BUFFER_MS = 80;
-
-		const int MAX_DB = 140;
+		const int BUFFER_MS = 120;
 
 		readonly WasapiLoopbackCapture Audio_Capture;
 		readonly double[] Audio_Data;
@@ -46,6 +44,12 @@ namespace AudioToSerial
 			fftPlot.Plot.Add.SignalXY(FFT_Freqs, FFT_Data);
 			fftPlot.Plot.YLabel("PWR (RMS)");
 			fftPlot.Plot.XLabel("Freq. (Hz)");
+			fftPlot.Plot.Axes.SetLimits(
+				0,
+				20_000,
+				0,
+				120
+			);
 			fftPlot.Refresh();
 
 			this.Audio_Capture = new WasapiLoopbackCapture()
@@ -164,14 +168,13 @@ namespace AudioToSerial
 				Array.Copy(fftFrequencyScale, FFT_Freqs, FFT_Freqs_Length);
 
 				// some simple auto-scaling
-				double fftPeakAmp = fftAmplitudes.Max();
-				double plotYMax = fftPlot.Plot.Axes.GetLimits().Top;
-				fftPlot.Plot.Axes.SetLimits(
-					0,
-					20_000,
-					0,
-					Math.Max(fftPeakAmp, plotYMax)
-				);
+				if (this.autoScaleCheckBox.Checked)
+				{
+					double fftPeakAmp = fftAmplitudes.Max();
+					double plotYMax = fftPlot.Plot.Axes.GetLimits().Top;
+
+					ResetYAxisScaling((int) fftPeakAmp, (int) plotYMax);
+				}
 
 				var bucket = CalculateFrequencyBuckets(fftFrequencyScale, fftAmplitudes);
 
@@ -282,14 +285,30 @@ namespace AudioToSerial
 		/// <summary>
 		/// Reset the graph to 'default' state
 		/// </summary>
-		private void ResetYAxisScaling()
+		private void ResetYAxisScaling(int val1 = -1, int val2 = -1)
 		{
-			fftPlot.Plot.Axes.SetLimits(
-				0,
-				20_000,
-				0,
-				60
-			);
+			if (this.autoScaleCheckBox.Checked == true)
+			{
+				if (val1 >= 0 && val2 >= 0)
+				{
+					fftPlot.Plot.Axes.SetLimits(
+						0,
+						20_000,
+						0,
+						Math.Max(val1, val2)
+					);
+				}
+				else
+				{
+					fftPlot.Plot.Axes.SetLimits(
+						0,
+						20_000,
+						0,
+						60
+					);
+				}
+			}
+
 		}
 	}
 }

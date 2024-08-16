@@ -43,6 +43,7 @@
 			label3 = new Label();
 			label4 = new Label();
 			highTxtBx = new TextBox();
+			autoScaleCheckBox = new CheckBox();
 			SuspendLayout();
 			// 
 			// serialsCombo
@@ -89,10 +90,10 @@
 			// 
 			fftPlot.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			fftPlot.DisplayScale = 1F;
-			fftPlot.Location = new Point(12, 162);
+			fftPlot.Location = new Point(12, 187);
 			fftPlot.Margin = new Padding(4);
 			fftPlot.Name = "fftPlot";
-			fftPlot.Size = new Size(498, 186);
+			fftPlot.Size = new Size(498, 344);
 			fftPlot.TabIndex = 28;
 			// 
 			// timer1
@@ -112,9 +113,9 @@
 			powerCheckBox.AutoSize = true;
 			powerCheckBox.Location = new Point(257, 29);
 			powerCheckBox.Name = "powerCheckBox";
-			powerCheckBox.Size = new Size(106, 19);
+			powerCheckBox.Size = new Size(62, 19);
 			powerCheckBox.TabIndex = 30;
-			powerCheckBox.Text = "Use Power (dB)";
+			powerCheckBox.Text = "Use dB";
 			powerCheckBox.UseVisualStyleBackColor = true;
 			powerCheckBox.CheckedChanged += powerCheckBox_CheckedChanged;
 			// 
@@ -178,11 +179,24 @@
 			highTxtBx.TabIndex = 35;
 			highTxtBx.TextAlign = HorizontalAlignment.Right;
 			// 
+			// autoScaleCheckBox
+			// 
+			autoScaleCheckBox.AutoSize = true;
+			autoScaleCheckBox.Checked = true;
+			autoScaleCheckBox.CheckState = CheckState.Checked;
+			autoScaleCheckBox.Location = new Point(257, 59);
+			autoScaleCheckBox.Name = "autoScaleCheckBox";
+			autoScaleCheckBox.Size = new Size(109, 19);
+			autoScaleCheckBox.TabIndex = 37;
+			autoScaleCheckBox.Text = "Auto-Scale Axis";
+			autoScaleCheckBox.UseVisualStyleBackColor = true;
+			// 
 			// AudioApp
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(522, 361);
+			ClientSize = new Size(522, 544);
+			Controls.Add(autoScaleCheckBox);
 			Controls.Add(label4);
 			Controls.Add(highTxtBx);
 			Controls.Add(label3);
@@ -221,5 +235,6 @@
 		private Label label3;
 		private Label label4;
 		private TextBox highTxtBx;
+		private CheckBox autoScaleCheckBox;
 	}
 }
